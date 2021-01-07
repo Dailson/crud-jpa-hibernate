@@ -1,0 +1,45 @@
+package br.com.dailson.jpa.filter;
+
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
+
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.annotation.WebFilter;
+
+import br.com.dailson.jpa.connection.SingleConnection;
+
+
+@WebFilter(urlPatterns = {"/*"})
+public class FilterClass implements javax.servlet.Filter{
+
+	private static Connection connection = null;
+	
+	
+	@Override
+	public void doFilter(ServletRequest arg0, ServletResponse arg1, FilterChain arg2)
+			throws IOException, ServletException {
+		try {			
+			arg2.doFilter(arg0, arg1);
+			connection.commit();
+		} catch(Exception e){
+			try {
+				e.printStackTrace();
+				connection.rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+		}
+		
+	}
+
+	@Override
+	public void init(FilterConfig filterConfig) throws ServletException {
+		
+		connection = SingleConnection.getConnection();
+	}
+}
